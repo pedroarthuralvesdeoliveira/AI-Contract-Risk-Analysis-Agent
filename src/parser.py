@@ -1,7 +1,6 @@
-from paddleocr import PaddleOCR
 from pathlib import Path
 from typing import Union
-import pymupdf 
+import pymupdf
 
 def extract_text_from_pdf(path: Union[str, Path]) -> str:
     """
@@ -47,6 +46,8 @@ def extract_text_from_image(path: Union[str, Path]) -> str:
         raise FileNotFoundError(f"Image file not found: {path}")
 
     try:
+        from paddleocr import PaddleOCR
+
         ocr = PaddleOCR(use_textline_orientation=True, lang="en")
         result = ocr.predict(str(path))
 

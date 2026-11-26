@@ -1,268 +1,112 @@
-# AI Contract Risk Analysis Agent
+# AI Contract Risk Analysis Agent (V2)
 
-Production-ready AI pipeline for identifying legal and financial risks in construction and IT contracts.
+Production-ready hybrid AI pipeline for **contract type classification** and **clause-level legal/financial risk detection**, combining local **Machine Learning (scikit-learn)** trained on public legal datasets with **Google Gemini** for deep legal explanations and remediation suggestions.
 
-## 🎯 Features
+## 🎯 What's New in V2
 
-- **Automated Risk Detection**: Identifies 7+ types of contract risks
-- **Structured Output**: Pydantic-validated JSON responses
-- **Interactive UI**: Simple Streamlit interface for uploads and analysis# AI Contract Risk Analysis Agent
+- **Contract Type Classification (Local ML)**: Automatically classifies uploaded contracts into 7 categories (`Service / Consulting Agreement`, `Non-Disclosure Agreement (NDA)`, `Software / IP Licensing`, `Distribution / Marketing Agreement`, `Supply / Purchase Agreement`, `Joint Venture / Partnership`, `Other Commercial Agreement`).
+- **Clause-Level Risk Triage (Local ML)**: Splits contracts into clauses and classifies every clause by **Risk Level** (`High`, `Medium`, `Low`) and **Risk Category** (11 legal/risk categories such as `Uncapped Liability`, `Broad Indemnification`, `Termination Risk`, `Payment & Fee Terms`, `Insurance Requirements`, `IP & Licensing Risk`, `Restrictive Covenants`, etc.).
+- **3 Analysis Modes in Streamlit**:
+  - **Hybrid (ML + Gemini)**: Local ML classifies contract type and flags risky clauses first, then Gemini provides contextual explanations and concrete remediations.
+  - **ML Only (Offline / Local)**: 100% local classification & template-based remediation with **no API key required**.
+  - **Gemini Only (V1)**: Classic end-to-end LLM analysis.
+- **Reproducible Training Pipeline**: Automated script (`scripts/train_models.py`) to download public datasets, train, evaluate, and export `.joblib` models + `models/metrics.json`.
 
-Production-ready AI pipeline for identifying legal and financial risks in construction and IT contracts, powered by **Google Gemini**.
-
-## 🎯 Features
-
-- **Automated Risk Detection**: Identifies 7+ types of contract risks
-- **Structured Output**: Pydantic-validated JSON responses
-- **Interactive UI**: Simple Streamlit interface for uploads and analysis
-- **Gemini-Powered**: Uses Google's latest Gemini 2.0 Flash for intelligent analysis
-- **Fast Processing**: PyMuPDF for efficient text extraction
-- **Free Tier Available**: Generous free quota with Google AI
-
-## 🏗️ Architecture
+## 🏗️ V2 Architecture
 
 ```
-┌─────────────┐    ┌──────────────┐    ┌─────────────┐
-│   PDF File  │ -> │ PyMuPDF      │ -> │ Google      │
-│   Upload    │    │ Text Extract │    │ Gemini API  │
-└─────────────┘    └──────────────┘    └─────────────┘
-                                              │
-                                              v
-                                       ┌──────────────┐
-                                       │   Pydantic   │
-                                       │  Validation  │
-                                       └──────────────┘
-                                              │
-                                              v
-                                       ┌──────────────┐
-                                       │  Streamlit   │
-                                       │  Interface   │
-                                       └──────────────┘
+┌─────────────┐    ┌──────────────────┐    ┌────────────────────────────────┐
+│  PDF / TXT  │ -> │ PyMuPDF / OCR    │ -> │ Local ML (TF-IDF + LogReg)     │
+│   Upload    │    │ Text Extraction  │    │ 1. Contract Type Classifier    │
+└─────────────┘    └──────────────────┘    │ 2. Clause Risk & Category ML   │
+                                           └────────────────────────────────┘
+                                                            │
+                                                            v
+                                           ┌────────────────────────────────┐
+                                           │ Optional Gemini Enrichment     │
+                                           │ (Explanations & Remediations)  │
+                                           └────────────────────────────────┘
+                                                            │
+                                                            v
+                                           ┌────────────────────────────────┐
+                                           │ Pydantic V2 + Streamlit UI     │
+                                           └────────────────────────────────┘
 ```
 
-### Tech Stack
+## 📊 Public Datasets & ML Benchmarks
 
-- **Python 3.11+** with `uv` dependency management
-- **PyMuPDF**: Fast PDF text extraction
-- **Pydantic 2**: Type-safe structured outputs
-- **Google Gemini 2.0**: Latest LLM for risk analysis
-- **Streamlit**: Rapid UI development
+Models are trained using `TfidfVectorizer` (unigrams + bigrams, `sublinear_tf=True`) + balanced `LogisticRegression`:
+
+| Classifier | Public Datasets | Train / Test Split | Accuracy | Macro F1 | Weighted F1 |
+|---|---|---|---|---|---|
+| **Contract Type** (`contract_type_classifier.joblib`) | CUAD v1 (510 contracts) + ContractNLI (150 NDAs) | 528 / 132 | **79.55%** | **76.83%** | **79.54%** |
+| **Clause Risk Level** (`clause_risk_classifier.joblib`) | LEDGAR (LexGLUE) + CUAD v1 clauses | 42,728 / 11,732 | **90.94%** | **85.73%** | **91.07%** |
+| **Clause Risk Category** (`clause_category_classifier.joblib`) | LEDGAR (LexGLUE) + CUAD v1 clauses | 42,728 / 11,732 | **87.97%** | **79.47%** | **88.48%** |
+
+Full per-class metrics are stored in [`models/metrics.json`](models/metrics.json).
 
 ## 🚀 Quick Start
-
-### Prerequisites
-
-```bash
-# Install uv (Python package manager)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Get Google AI API Key (FREE)
-# Visit: https://aistudio.google.com/apikey
-```
 
 ### Installation
 
 ```bash
-# Clone repository
-git clone https://github.com/pedroarthuralvesdeoliveira/ai-challenge.git
-cd ai-challenge
-
-# Install dependencies with uv
+git clone https://github.com/pedroarthuralvesdeoliveira/AI-Contract-Risk-Analysis-Agent.git
+cd AI-Contract-Risk-Analysis-Agent
 uv sync
-
-# Set up API key
-cp .env.example .env
-# Edit .env and add your GOOGLE_API_KEY
 ```
 
-### Run
+### Train / Reproduce ML Models (Optional — pre-trained artifacts are included in `models/`)
 
 ```bash
-# Start Streamlit app
-uv run streamlit run src/app.py
-
-# The app will open at http://localhost:8501
+uv run python scripts/train_models.py
 ```
 
-## 📋 Usage
+This downloads CUAD v1, ContractNLI, and LEDGAR into `data/raw/`, trains all three classifiers, and saves the `.joblib` artifacts and `metrics.json` into `models/`.
 
-1. **Get API Key**: Visit https://aistudio.google.com/apikey (free, no credit card)
-2. **Upload Contract**: Drag & drop PDF file
-3. **Configure**: Enter API key in sidebar
-4. **Analyze**: Click "Analyze Contract with Gemini" button
-5. **Review**: Examine identified risks with explanations
-6. **Export**: Download results as JSON or Markdown
-
-### Gemini Model Options
-
-| Model | Speed | Accuracy | Cost | Best For |
-|-------|-------|----------|------|----------|
-| **Gemini 2.0 Flash** | ⚡⚡⚡ | ⭐⭐⭐ | Free tier | Quick analysis, most contracts |
-| **Gemini 1.5 Pro** | ⚡ | ⭐⭐⭐⭐⭐ | Pay-per-use | Complex contracts, thorough review |
-| **Gemini 1.5 Flash** | ⚡⚡ | ⭐⭐⭐⭐ | Free tier | Balanced option |
-
-### Detected Risk Types
-
-- ⚠️ Vague payment terms
-- ⚠️ Uncapped liability
-- ⚠️ Ambiguous scope of work
-- ⚠️ Missing termination terms
-- ⚠️ Missing insurance requirements
-- ⚠️ Broad indemnification clauses
-- ⚠️ Overly unilateral terms
-
-## 📊 Output Schema
-
-```json
-{
-  "risks": [
-    {
-      "risk_type": "Uncapped Liability",
-      "clause_text": "...exact clause from contract...",
-      "explanation": "Why this is problematic...",
-      "remediation_suggestion": "How to fix it..."
-    }
-  ]
-}
-```
-
-## 🧪 Testing
+### Run Streamlit App
 
 ```bash
-# Run on sample contracts
-uv run pytest
+# Optional for Hybrid / Gemini Only modes:
+export GOOGLE_API_KEY="your_api_key_here"
 
-# Test with provided assets
 uv run streamlit run src/app.py
-# Upload files from assets/ folder
+```
+
+### Run Tests
+
+```bash
+uv run pytest -v
 ```
 
 ## 📁 Project Structure
 
 ```
-ai-challenge/
+AI-Contract-Risk-Analysis-Agent/
+├── models/                               # Pre-trained V2 ML artifacts & metrics
+│   ├── contract_type_classifier.joblib
+│   ├── clause_risk_classifier.joblib
+│   ├── clause_category_classifier.joblib
+│   └── metrics.json
+├── scripts/
+│   └── train_models.py                   # Reproducible dataset download & training CLI
 ├── src/
-│   ├── models.py          # Pydantic schemas
-│   ├── parser.py          # PDF text extraction
-│   ├── analyzer.py        # Gemini integration
-│   └── app.py             # Streamlit UI
-├── assets/                # Sample contracts
-├── tests/                 # Unit tests
-│   ├── test_parser.py     # Parser tests
-│   └── test_analyzer.py   # Analyzer tests
-├── pyproject.toml         # Dependencies (managed by uv)
-├── .env.example           # Environment variables template
+│   ├── ml/
+│   │   ├── dataset.py                    # CUAD, ContractNLI & LEDGAR loaders
+│   │   ├── train.py                      # Training & evaluation pipeline
+│   │   └── predictor.py                  # Clause splitting & local ML inference
+│   ├── models.py                         # Pydantic V2 schemas (V1-compatible + V2 ML fields)
+│   ├── parser.py                         # PyMuPDF + lazy PaddleOCR text extraction
+│   ├── analyzer.py                       # Hybrid ML + Gemini & V1 Gemini pipelines
+│   └── app.py                            # Streamlit V2 UI
+├── tests/
+│   ├── test_analyzer.py
+│   ├── test_ml.py
+│   └── test_parser.py
+├── assets/                               # Sample contract PDFs
+├── pyproject.toml                        # Dependencies & pytest config (managed by uv)
 └── README.md
 ```
 
-## 🐳 Docker (Optional)
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
-# Copy project files
-COPY . .
-
-# Install dependencies
-RUN uv sync
-
-# Expose Streamlit port
-EXPOSE 8501
-
-# Run application
-CMD ["uv", "run", "streamlit", "run", "src/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
-```
-
-Build and run:
-```bash
-docker build -t ai-challenge .
-docker run -p 8501:8501 -e GOOGLE_API_KEY=your_key ai-challenge
-```
-
-## 📝 Technical Notes
-
-### Current Limitations
-
-1. **Text-Only PDFs**: Requires native text; OCR not implemented in MVP
-2. **Single Document**: Doesn't cross-reference multiple contracts yet
-3. **English Only**: Optimized for English-language contracts
-4. **Manual Review**: AI suggestions should be verified by legal counsel
-
-### Future Improvements
-
-1. **OCR Integration**: Add Tesseract for scanned documents
-2. **Multi-Document Analysis**: Cross-check data across related contracts
-3. **Vector Database**: RAG for legal precedent lookup
-4. **Batch Processing**: Analyze multiple contracts simultaneously
-5. **Custom Rules**: Allow user-defined risk criteria
-6. **Integration API**: REST endpoints for backend systems
-
-### Why This Stack?
-
-- **PyMuPDF**: 10x faster than alternatives, robust text extraction
-- **Pydantic**: Production-ready validation, self-documenting schemas
-- **Google Gemini**: Best free tier, excellent JSON mode, fast response times
-- **Streamlit**: 4-hour constraint demands rapid UI development
-
-### Gemini Advantages
-
-✅ **Generous Free Tier**: 60 requests/minute for Flash models  
-✅ **JSON Mode**: Native structured output support  
-✅ **Fast**: Gemini 2.0 Flash is among the fastest LLMs  
-✅ **Multimodal**: Future support for image-based PDFs  
-✅ **No Credit Card**: Free tier doesn't require payment method  
-
-## 🔑 API Key Setup
-
-### Option 1: Environment Variable (Recommended)
-```bash
-export GOOGLE_API_KEY="your_api_key_here"
-uv run streamlit run src/app.py
-```
-
-### Option 2: .env File
-```bash
-echo "GOOGLE_API_KEY=your_api_key_here" > .env
-uv run streamlit run src/app.py
-```
-
-### Option 3: Streamlit UI
-- Enter API key directly in the sidebar
-- Key is stored only for the session
-
-
-## 📊 Performance Benchmarks
-
-- **PDF Extraction**: ~1-2 seconds per 50-page document
-- **Gemini Analysis**: ~3-8 seconds (Flash) / ~10-15 seconds (Pro)
-- **Total**: ~10-20 seconds per contract
-
-## 🆘 Troubleshooting
-
-### "API key not valid"
-- Get a new key at https://aistudio.google.com/apikey
-- Make sure you copied the entire key
-- Check for extra spaces
-
-### "Resource exhausted" or "Quota exceeded"
-- You've hit the rate limit (60 req/min for free tier)
-- Wait a moment and try again
-- Consider using Gemini Flash instead of Pro
-
-### "Very little text extracted"
-- Your PDF might be scanned/image-based
-- OCR support coming soon
-- Try a text-based PDF first
-
 ## 📄 License
 
-MIT License - Assessment Project
-
-## 👤 Author
-
-[Pedro Oliveira] - Backend AI Engineer Candidate
+MIT License

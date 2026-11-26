@@ -1,0 +1,193 @@
+{
+  "trained_at": "2026-11-26T03:23:30.644267+00:00",
+  "datasets": {
+    "contract_type": [
+      "CUAD v1 (510 contracts)",
+      "ContractNLI (NDAs)"
+    ],
+    "clause_risk": [
+      "LEDGAR / LexGLUE (80k provisions)",
+      "CUAD v1 (extracted clauses)"
+    ]
+  },
+  "contract_type_classifier": {
+    "accuracy": 0.7955,
+    "macro_f1": 0.7683,
+    "weighted_f1": 0.7954,
+    "per_class": {
+      "Distribution / Marketing Agreement": {
+        "precision": 0.8077,
+        "recall": 0.7241,
+        "f1": 0.7636,
+        "support": 29
+      },
+      "Joint Venture / Partnership": {
+        "precision": 0.7692,
+        "recall": 0.7692,
+        "f1": 0.7692,
+        "support": 13
+      },
+      "Non-Disclosure Agreement (NDA)": {
+        "precision": 1.0,
+        "recall": 0.9677,
+        "f1": 0.9836,
+        "support": 31
+      },
+      "Other Commercial Agreement": {
+        "precision": 1.0,
+        "recall": 0.4545,
+        "f1": 0.625,
+        "support": 11
+      },
+      "Service / Consulting Agreement": {
+        "precision": 0.7273,
+        "recall": 0.8571,
+        "f1": 0.7869,
+        "support": 28
+      },
+      "Software / IP Licensing": {
+        "precision": 0.5652,
+        "recall": 0.7647,
+        "f1": 0.65,
+        "support": 17
+      },
+      "Supply / Purchase Agreement": {
+        "precision": 1.0,
+        "recall": 0.6667,
+        "f1": 0.8,
+        "support": 3
+      }
+    },
+    "train_samples": 528,
+    "test_samples": 132,
+    "classes": [
+      "Distribution / Marketing Agreement",
+      "Joint Venture / Partnership",
+      "Non-Disclosure Agreement (NDA)",
+      "Other Commercial Agreement",
+      "Service / Consulting Agreement",
+      "Software / IP Licensing",
+      "Supply / Purchase Agreement"
+    ]
+  },
+  "clause_risk_classifier": {
+    "accuracy": 0.9094,
+    "macro_f1": 0.8573,
+    "weighted_f1": 0.9107,
+    "per_class": {
+      "High": {
+        "precision": 0.7159,
+        "recall": 0.8258,
+        "f1": 0.767,
+        "support": 821
+      },
+      "Low": {
+        "precision": 0.9624,
+        "recall": 0.9351,
+        "f1": 0.9485,
+        "support": 7718
+      },
+      "Medium": {
+        "precision": 0.8442,
+        "recall": 0.8688,
+        "f1": 0.8563,
+        "support": 3193
+      }
+    },
+    "train_samples": 42728,
+    "test_samples": 11732,
+    "classes": [
+      "High",
+      "Low",
+      "Medium"
+    ]
+  },
+  "clause_category_classifier": {
+    "accuracy": 0.8797,
+    "macro_f1": 0.7947,
+    "weighted_f1": 0.8848,
+    "per_class": {
+      "Broad Indemnification": {
+        "precision": 0.7852,
+        "recall": 0.9253,
+        "f1": 0.8495,
+        "support": 241
+      },
+      "Confidentiality & Compliance": {
+        "precision": 0.7266,
+        "recall": 0.8942,
+        "f1": 0.8017,
+        "support": 416
+      },
+      "IP & Licensing Risk": {
+        "precision": 0.8445,
+        "recall": 0.8445,
+        "f1": 0.8445,
+        "support": 328
+      },
+      "Insurance Requirements": {
+        "precision": 0.9248,
+        "recall": 0.9498,
+        "f1": 0.9371,
+        "support": 259
+      },
+      "Liability & Dispute Terms": {
+        "precision": 0.7346,
+        "recall": 0.8278,
+        "f1": 0.7784,
+        "support": 836
+      },
+      "Payment & Fee Terms": {
+        "precision": 0.7296,
+        "recall": 0.9055,
+        "f1": 0.8081,
+        "support": 751
+      },
+      "Restrictive Covenants": {
+        "precision": 0.6954,
+        "recall": 0.8235,
+        "f1": 0.754,
+        "support": 255
+      },
+      "Standard / Low-Risk Clause": {
+        "precision": 0.9774,
+        "recall": 0.8896,
+        "f1": 0.9314,
+        "support": 7718
+      },
+      "Termination Risk": {
+        "precision": 0.5491,
+        "recall": 0.8344,
+        "f1": 0.6624,
+        "support": 308
+      },
+      "Uncapped Liability": {
+        "precision": 0.4848,
+        "recall": 0.7442,
+        "f1": 0.5872,
+        "support": 43
+      },
+      "Unilateral / Assignment Terms": {
+        "precision": 0.7677,
+        "recall": 0.8076,
+        "f1": 0.7872,
+        "support": 577
+      }
+    },
+    "train_samples": 42728,
+    "test_samples": 11732,
+    "classes": [
+      "Broad Indemnification",
+      "Confidentiality & Compliance",
+      "IP & Licensing Risk",
+      "Insurance Requirements",
+      "Liability & Dispute Terms",
+      "Payment & Fee Terms",
+      "Restrictive Covenants",
+      "Standard / Low-Risk Clause",
+      "Termination Risk",
+      "Uncapped Liability",
+      "Unilateral / Assignment Terms"
+    ]
+  }
+}
