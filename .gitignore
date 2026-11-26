@@ -214,3 +214,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Raw and processed ML datasets (reproducible via scripts/train_models.py)
+data/raw/
+data/processed/
